@@ -87,65 +87,44 @@ public class CentralPacientes {
      * Adiciona un paciente a la lista de pacientes antes del paciente con el código especificado. <br>
      */
     public void agregarPacienteAntesDe(int cod, Paciente pac) throws NoExisteException {
-        int index = -1;
-
-        for (int i = 0; i < pacientes.size(); i++) {
-            if (pacientes.get(i).darCodigo() == cod) {
-                index = i;
-                break;
-            }
-        }
+        int index = pacientes.indexOf(localizar(cod));
 
         if (index != -1) {
             pacientes.add(index, pac);
         }
     }
 
+
     /**
      * Adiciona un paciente a la lista de pacientes después del paciente con el código especificado.
      */
     public void agregarPacienteDespuesDe(int cod, Paciente pac) throws NoExisteException {
-        int index = -1;
-
-        for (int i = 0; i < pacientes.size(); i++) {
-            if (pacientes.get(i).darCodigo() == cod) {
-                index = i;
-                break;
-            }
-        }
+        int index = pacientes.indexOf(localizar(cod));
 
         if (index != -1) {
             pacientes.add(index + 1, pac);
         }
     }
 
+
     /**
      * Busca el paciente con el código dado en la lista de pacientes.
      */
     public Paciente localizar(int codigo) {
-        for (Paciente pac : pacientes) {
-            if (pac.darCodigo() == codigo) {
-                return pac;
-            }
-        }
-        return null;
+        return pacientes.stream()
+                .filter(pac -> pac.darCodigo() == codigo)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
      * Elimina el paciente con el código especificado.
      */
     public void eliminarPaciente(int cod) throws NoExisteException {
-        int index = -1;
+        Paciente paciente = localizar(cod);
 
-        for (int i = 0; i < pacientes.size(); i++) {
-            if (pacientes.get(i).darCodigo() == cod) {
-                index = i;
-                break;
-            }
-        }
-
-        if (index != -1) {
-            pacientes.remove(index);
+        if (paciente != null) {
+            pacientes.remove(paciente);
         }
     }
 
@@ -178,30 +157,18 @@ public class CentralPacientes {
      * Retorna la cantidad de hombres que hay en la lista
      */
     public int cantHombres() {
-        int contadorHombres = 0;
-
-        for (Paciente pac : pacientes) {
-            if (pac.darSexo() == Paciente.HOMBRE) {
-                contadorHombres++;
-            }
-        }
-
-        return contadorHombres;
+        return (int) pacientes.stream()
+                .filter(pac -> pac.darSexo() == Paciente.HOMBRE)
+                .count();
     }
 
     /**
      * Retorna la cantidad de mujeres que hay en la lista
      */
     public int cantMujeres() {
-        int contadorMujeres = 0;
-
-        for (Paciente pac : pacientes) {
-            if (pac.darSexo() == Paciente.MUJER) {
-                contadorMujeres++;
-            }
-        }
-
-        return contadorMujeres;
+        return (int) pacientes.stream()
+                .filter(pac -> pac.darSexo() == Paciente.MUJER)
+                .count();
     }
 
     /**
@@ -211,25 +178,17 @@ public class CentralPacientes {
      * @return nombre de la clínica
      */
     public String metodo4() {
-        String clinicaMasOcupada = null;
-        int maxPacientes = 0;
-        for (String clinica : listaClinicas) {
-            int pacientesEnClinica = 0;
-
-            for (Paciente pac : pacientes) {
-                if (pac.darClinica().equalsIgnoreCase(clinica)) {
-                    pacientesEnClinica++;
-                }
-            }
-
-            if (pacientesEnClinica > maxPacientes) {
-                maxPacientes = pacientesEnClinica;
-                clinicaMasOcupada = clinica;
-            }
-        }
-
-        return clinicaMasOcupada;
+        return listaClinicas.stream()
+                .max((clinica1, clinica2) -> {
+                    long pacientesEnClinica1 = pacientes.stream()
+                            .filter(pac -> pac.darClinica().equalsIgnoreCase(clinica1))
+                            .count();
+                    long pacientesEnClinica2 = pacientes.stream()
+                            .filter(pac -> pac.darClinica().equalsIgnoreCase(clinica2))
+                            .count();
+                    return Long.compare(pacientesEnClinica1, pacientesEnClinica2);
+                })
+                .orElse(null);
     }
-
 
 }
